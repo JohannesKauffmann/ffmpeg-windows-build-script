@@ -1,5 +1,5 @@
 Source and build directories
 
-./dependencies/*
-./x86_64-w64-mingw32/*
-./ffmpeg-*/*
+dependencies/
+x86_64-w64-mingw32/
+ffmpeg-*/
