@@ -26,10 +26,21 @@ main()
 install_packages()
 {
     sudo apt install -y gettext m4 nasm yasm autoconf libtool ragel meson ninja-build gperf ant openjdk-11-jdk autogen mercurial && \
-    sudo apt install -y mingw-w64-common mingw-w64-x86-64-dev mingw-w64-tools gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 && \
-    wget "http://ftp.nl.debian.org/debian/pool/main/m/mingw-w64/mingw-w64-tools_8.0.0-1_amd64.deb" && \
-    sudo dpkg -i "mingw-w64-tools_8.0.0-1_amd64.deb" && \
-    rm "mingw-w64-tools_8.0.0-1_amd64.deb"
+    sudo apt install -y mingw-w64-common mingw-w64-x86-64-dev mingw-w64-tools gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
+    # Check for Debian or Ubuntu
+    if [ -f "/etc/lsb-release" ]; then
+        # Ubuntu
+        wget "http://nl.archive.ubuntu.com/ubuntu/pool/universe/m/mingw-w64/mingw-w64-tools_8.0.0-1_amd64.deb" && \
+        sudo dpkg -i "mingw-w64-tools_8.0.0-1_amd64.deb" && \
+        rm "mingw-w64-tools_8.0.0-1_amd64.deb"
+    elif [ -f "/etc/os-release" ]; then
+        #Debian
+        wget "http://ftp.nl.debian.org/debian/pool/main/m/mingw-w64/mingw-w64-tools_8.0.0-1_amd64.deb" && \
+        sudo dpkg -i "mingw-w64-tools_8.0.0-1_amd64.deb" && \
+        rm "mingw-w64-tools_8.0.0-1_amd64.deb"
+    else
+        # TODO: prompt user to verify to continue on untested OS
+    fi
 }
 
 # Initialize the dependency folder where all source code is checkout out,
