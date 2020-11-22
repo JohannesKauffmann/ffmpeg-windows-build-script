@@ -1,10 +1,13 @@
 #!/bin/sh
+#set -x
 
 main()
 {
     echo "Cross compiling FFmpeg..."
 
     install_packages
+
+    root_dir=$( dirname "$( realpath "$0" )" )
 
     # Source environment variables and check
     . ./environment-x86_64-w64-mingw32
@@ -136,6 +139,5 @@ build_ffmpeg()
     echo "Done building FFmpeg 4.3.1: executable is in ffmpeg-4.3.1/build"
 }
 
-set -x
 # Pass all arguments to main()
 main "$@"
