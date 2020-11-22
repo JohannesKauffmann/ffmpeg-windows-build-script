@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Environment variables for building FFmpeg using x86_64-w64-mingw32
+
+# Root dir should be the absolute path to the current directory
+#export root_dir=$( dirname "$( realpath "$0" )" )
+export root_dir=/home/johannes/scripting/ffmpeg-build-script
+
+arch=x86_64
+export TRIPLET=$arch-w64-mingw32
+
+export CC=$TRIPLET-gcc
+export CXX=$TRIPLET-g++
+export LD=$TRIPLET-ld
+export AR=$TRIPLET-ar
+export AS=$TRIPLET-as
+export RANLIB=$TRIPLET-ranlib
+export WINDRES=$TRIPLET-windres
+
+export SYSROOT=$root_dir/x86_64-w64-mingw32
+
+export CFLAGS=" -I$SYSROOT/include --static "
+export CXXFLAGS=" -I$SYSROOT/include --static "
+export LDFLAGS=" -L$SYSROOT/lib -static -lpthread "
+
+export PKG_CONFIG_PATH=$SYSROOT/lib/pkgconfig
