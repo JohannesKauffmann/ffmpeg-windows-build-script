@@ -25,7 +25,7 @@ main()
 # Also installs a newer version of x86_64-w64-mingw32-pkg-config, since the current debian version is broken.
 install_packages()
 {
-    sudo apt install -y gettext m4 nasm yasm autoconf libtool ragel meson ninja-build gperf ant openjdk-11-jdk autogen mercurial && \
+    sudo apt install -y make wget gettext m4 nasm yasm autoconf libtool ragel meson ninja-build gperf ant openjdk-11-jdk autogen mercurial && \
     sudo apt install -y mingw-w64-common mingw-w64-x86-64-dev mingw-w64-tools gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
     # Check for Debian or Ubuntu
     if [ -f "/etc/lsb-release" ]; then
@@ -38,7 +38,7 @@ install_packages()
         wget "http://ftp.nl.debian.org/debian/pool/main/m/mingw-w64/mingw-w64-tools_8.0.0-1_amd64.deb" && \
         sudo dpkg -i "mingw-w64-tools_8.0.0-1_amd64.deb" && \
         rm "mingw-w64-tools_8.0.0-1_amd64.deb"
-    else
+    #else
         # TODO: prompt user to verify to continue on untested OS
     fi
 }
