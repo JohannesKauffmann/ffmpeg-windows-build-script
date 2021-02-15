@@ -8,6 +8,7 @@ main()
     # Build configuration
     HAVE_GMP=1
     HAVE_LIBX264=1
+    HAVE_LIBFDKAAC=1
 
     install_packages
 
@@ -104,6 +105,9 @@ build_dependencies()
     if [ ! -z $HAVE_LIBX264 ]; then
         build_x264
     fi
+    if [ ! -z $HAVE_LIBFDKAAC ]; then
+        build_fdkaac
+    fi
     
     cd ..
     echo "Done compiling dependencies"
@@ -136,6 +140,20 @@ build_x264()
     cd ../..
 }
 
+build_fdkaac()
+{
+    echo "Building FDK AAC"
+    git_checkout "https://github.com/mstorsjo/fdk-aac.git" "fdkaac_git"
+    mkdir -p fdkaac_git/build
+    cd fdkaac_git/build
+    autoreconf -fiv ..
+    ../configure --enable-static --disable-shared --host=$TRIPLET --prefix=$SYSROOT
+    make -j$( nproc )
+    make install
+    cd ../..
+    echo "Done building FDK AAC"
+}
+
 # Checkout git repository $1 in folder $2, optionally checking out branch $3
 git_checkout()
 {
@@ -164,6 +182,9 @@ build_ffmpeg()
     fi
     if [ ! -z "$HAVE_LIBX264" ]; then
         CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libx264"
+    fi
+    if [ ! -z "$HAVE_LIBFDKAAC" ]; then
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libfdk-aac --enable-nonfree"
     fi
 
     pkg_config_flags=--static arch=$arch target_os=mingw64 cross_prefix=$TRIPLET- ../configure $CONFIGURE_OPTIONS
