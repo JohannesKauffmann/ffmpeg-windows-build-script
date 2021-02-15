@@ -5,6 +5,10 @@ main()
 {
     echo "Cross compiling FFmpeg..."
 
+    # Build configuration
+    HAVE_GMP=1
+    HAVE_LIBX264=1
+
     install_packages
 
     root_dir=$( dirname "$( realpath "$0" )" )
@@ -14,7 +18,7 @@ main()
 
     init_folders
 
-    # Don't build dependencies if user has answered no 
+    #TODO: Don't build dependencies if user has answered no
     build_dependencies
     build_ffmpeg
 }
@@ -41,6 +45,9 @@ install_packages()
     #else
         # TODO: prompt user to verify to continue on untested OS
     fi
+
+    # Check for WSL, in which case GMP configure fails (#1)
+    grep -q "Microsoft" "/proc/version" && HAVE_GMP=
 }
 
 # Initialize the dependency folder where all source code is checkout out,
@@ -91,8 +98,12 @@ build_dependencies()
     echo "Cross compiling dependencies..."
     cd $root_dir/dependencies
 
-    build_gmp
-    build_x264
+    if [ ! -z $HAVE_GMP ]; then
+        build_gmp
+    fi
+    if [ ! -z $HAVE_LIBX264 ]; then
+        build_x264
+    fi
     
     cd ..
     echo "Done compiling dependencies"
@@ -100,6 +111,7 @@ build_dependencies()
 
 build_gmp()
 {
+    echo "Building GMP"
     wget "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
     tar -xf $( basename "gmp-6.2.1.tar.xz" )
     rm "gmp-6.2.1.tar.xz"
@@ -108,12 +120,13 @@ build_gmp()
     make -j$( nproc )
     make install
     cd ../..
+    echo "Done building GMP"
 }
 
 build_x264()
 {
     git_checkout "https://code.videolan.org/videolan/x264.git" "x264_git" "origin/master"
-    mkdir x264_git/build
+    mkdir -p x264_git/build
     cd x264_git/build
     unset AS
     ../configure --enable-static --disable-cli --enable-strip --bit-depth=all --host=$TRIPLET --cross-prefix=$TRIPLET- --prefix=$SYSROOT
@@ -142,9 +155,18 @@ build_ffmpeg()
     wget "$url"
     tar -xf "$dirname.tar.xz"
     rm "$dirname.tar.xz"
-    mkdir "$dirname/build"
+    mkdir -p "$dirname/build"
     cd "$dirname/build"
-    pkg_config_flags=--static arch=x86_64 target_os=mingw64 cross_prefix=$TRIPLET- ../configure --enable-gpl --enable-version3 --enable-gmp --enable-libx264
+
+    CONFIGURE_OPTIONS="--enable-gpl --enable-version3"
+    if [ ! -z "$HAVE_GMP" ]; then
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-gmp"
+    fi
+    if [ ! -z "$HAVE_LIBX264" ]; then
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libx264"
+    fi
+
+    pkg_config_flags=--static arch=$arch target_os=mingw64 cross_prefix=$TRIPLET- ../configure $CONFIGURE_OPTIONS
     make -j $( nproc )
     cd ../..
     echo "Done building FFmpeg 4.3.1: executable is in ffmpeg-4.3.1/build"
