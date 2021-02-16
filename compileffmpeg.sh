@@ -6,8 +6,11 @@ main()
     echo "Cross compiling FFmpeg..."
 
     # Build configuration
+    CONFIGURE_OPTIONS="--enable-gpl --enable-version3"
+
     HAVE_GMP=1
     HAVE_LIBX264=1
+    HAVE_LIBX265=1
     HAVE_LIBFDKAAC=1
 
     install_packages
@@ -100,12 +103,19 @@ build_dependencies()
     cd $root_dir/dependencies
 
     if [ ! -z $HAVE_GMP ]; then
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-gmp"
         build_gmp
     fi
     if [ ! -z $HAVE_LIBX264 ]; then
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libx264"
         build_x264
     fi
+    if [ ! -z $HAVE_LIBX265 ]; then
+        #CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libx265"
+        build_x265
+    fi
     if [ ! -z $HAVE_LIBFDKAAC ]; then
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libfdk-aac --enable-nonfree"
         build_fdkaac
     fi
     
@@ -140,6 +150,11 @@ build_x264()
     cd ../..
 }
 
+build_x265()
+{
+    echo "throw new NotImplementedException"
+}
+
 build_fdkaac()
 {
     echo "Building FDK AAC"
@@ -157,7 +172,7 @@ build_fdkaac()
 # Checkout git repository $1 in folder $2, optionally checking out branch $3
 git_checkout()
 {
-    git clone $1 $2
+    git clone --depth=1 $1 $2
     if [ ! -z "$3" ]; then
         cd $2
         git checkout $3
@@ -175,17 +190,6 @@ build_ffmpeg()
     rm "$dirname.tar.xz"
     mkdir -p "$dirname/build"
     cd "$dirname/build"
-
-    CONFIGURE_OPTIONS="--enable-gpl --enable-version3"
-    if [ ! -z "$HAVE_GMP" ]; then
-        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-gmp"
-    fi
-    if [ ! -z "$HAVE_LIBX264" ]; then
-        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libx264"
-    fi
-    if [ ! -z "$HAVE_LIBFDKAAC" ]; then
-        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-libfdk-aac --enable-nonfree"
-    fi
 
     pkg_config_flags=--static arch=$arch target_os=mingw64 cross_prefix=$TRIPLET- ../configure $CONFIGURE_OPTIONS
     make -j $( nproc )
