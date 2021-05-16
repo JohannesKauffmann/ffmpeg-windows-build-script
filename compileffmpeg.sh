@@ -51,7 +51,7 @@ install_packages()
     fi
 
     # Check for WSL, in which case GMP configure fails (#1)
-    grep -q "Microsoft|microsoft" "/proc/version" && HAVE_GMP=
+    grep -q -e "Microsoft" -e "microsoft" "/proc/version" && HAVE_GMP=
 }
 
 # Initialize the dependency folder where all source code is checkout out,
